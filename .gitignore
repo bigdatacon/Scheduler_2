@@ -4,6 +4,14 @@ my_module.egg-info/
 cmake-build-*/
 /main.so
 
+# Ignore specific .so files
+main
+my_module.so
+
+# Ignore specific git save files
+.gitignore.save
+
+
 # Ignore IDE specific files
 .idea/
 
