@@ -1,6 +1,0 @@
-# ninja log v5
-1	477	1716410987203712648	CMakeFiles/Scheduler_1.dir/main.cpp.o	83bc5d8e9eddc806
-477	616	1716410987343713129	Scheduler_1	4aa6ada560e93e18
-1	2125	1716410988851718312	CMakeFiles/my_module.dir/my_module/InputData.cpp.o	68db4850a42a2998
-0	4270	1716410990995725680	CMakeFiles/my_module.dir/my_module/module.cpp.o	c45e1ed32caa6a00
-4271	6451	1716410993179733187	my_module.cpython-310-x86_64-linux-gnu.so	d4aaef5cb7b4633
