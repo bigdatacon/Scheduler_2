@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build my_module",
+      "type": "shell",
+      "command": "/usr/bin/g++",
+      "args": [
+        "-std=c++17",
+        "-shared",
+        "-fPIC",
+        "-O3",
+        "my_module/module.cpp",
+        "my_module/InputData.cpp",
+        "-o",
+        "my_module.so",
+        "-Iextern/pybind11/include",
+        "-Ijson/include",
+        "$(python3-config --includes)",
+        "$(python3-config --ldflags)"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "detail": "Build task for my_module"
+    },
+    {
+      "label": "Build main",
+      "type": "shell",
+      "command": "/usr/bin/g++",
+      "args": [
+        "-std=c++17",
+        "-O3",
+        "main.cpp",
+        "-o",
+        "main",
+        "-Ijson/include"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "detail": "Build task for main"
+    }
+  ]
+}
