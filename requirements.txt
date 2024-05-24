@@ -1,1 +1,4 @@
+setuptools
+wheel
 cibuildwheel
+pybind11

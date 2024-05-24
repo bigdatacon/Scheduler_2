@@ -22,8 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -U pip
-          pip install setuptools wheel
-          pip install cibuildwheel
+          pip install setuptools wheel cibuildwheel pybind11
 
       - name: Build wheels
         run: cibuildwheel --output-dir wheelhouse
