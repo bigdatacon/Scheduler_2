@@ -1,3 +1,4 @@
+# .github/workflows/build_wheels.yml
 name: Build Wheels
 
 on: [push, pull_request]
@@ -9,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
 
     steps:
       - name: Checkout code
@@ -20,11 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: Install cibuildwheel
         run: pip install cibuildwheel==2.18.1
-
-      - name: Install dependencies
-        run: pip install pybind11
 
       - name: Build wheels
         run: cibuildwheel --output-dir wheelhouse
