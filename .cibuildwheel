@@ -1,0 +1,3 @@
+[options]
+manylinux-x86_64-image = manylinux2010
+macosx-deployment-target = 10.9
