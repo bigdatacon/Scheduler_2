@@ -14,7 +14,8 @@ ext_modules = [
             "json/include"
         ],
         language="c++",
-        extra_compile_args=["-std=c++11"]
+        # extra_compile_args=["-std=c++11"]
+        extra_compile_args=["-std=c++17", "-D_GLIBCXX_USE_CXX11_ABI=0"],
     ),
 ]
 
