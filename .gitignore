@@ -19,5 +19,5 @@ my_module.so
 venv/
 
 # Ignore external libraries
-extern/
+#extern/
 #json/

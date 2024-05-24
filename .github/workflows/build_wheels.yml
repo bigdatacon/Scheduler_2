@@ -29,13 +29,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pybind11
-
+          pip install cibuildwheel==2.18.1
 
       - name: Build wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
+          CIBW_BEFORE_BUILD: "pip install pybind11"
           CIBW_LOG_LEVEL: DEBUG
 
       - name: Upload wheels
@@ -63,13 +62,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pybind11
-
+          pip install cibuildwheel==2.18.1
 
       - name: Build wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
+          CIBW_BEFORE_BUILD: "pip install pybind11"
           CIBW_LOG_LEVEL: DEBUG
 
       - name: Upload wheels
