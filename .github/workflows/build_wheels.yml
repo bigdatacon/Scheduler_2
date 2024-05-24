@@ -1,6 +1,13 @@
 name: Build Wheels
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master_2
+  pull_request:
+    branches:
+      - master_2
+  workflow_dispatch:
 
 jobs:
   build_wheels_ubuntu:
