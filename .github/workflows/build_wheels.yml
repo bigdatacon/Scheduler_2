@@ -3,28 +3,30 @@ name: Build and Upload Wheels
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_wheels:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install cibuildwheel
+        run: pip install cibuildwheel==2.18.1
 
-      - name: Build wheel
-        run: python setup.py bdist_wheel
+      - name: Build wheels
+        run: cibuildwheel --output-dir wheelhouse
 
-      - name: Upload wheel
+      - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:
-          name: my-wheels
-          path: dist/*.whl
+          name: wheelhouse
+          path: wheelhouse
