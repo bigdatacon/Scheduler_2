@@ -1,4 +1,4 @@
 setuptools
 wheel
 cibuildwheel
-pybind11>=2.5.0
+pybind11
