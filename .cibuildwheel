@@ -1,3 +1,5 @@
 [options]
 manylinux-x86_64-image = manylinux2010
 macosx-deployment-target = 10.9
+setup_requires =
+    pybind11>=2.5.0
