@@ -31,11 +31,13 @@ int main() {
     container.add_2(&op1);
     container.add_2(&op2);
 
+
     for (int val : container.getData()) {
         std::cout << val << " ";
     }
     std::cout << std::endl;
 
+    std::cout << "использование container.getData_2() : " << std::endl;
     for (MSOperation* op : container.getData_2()) {
         std::cout << op->nJobIndex << " " << op->nOperationIndex << " "
                   << op->nStartTime << " " << op->nFinishTime << std::endl;
