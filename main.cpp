@@ -23,5 +23,24 @@ int main() {
         std::cout << el << std:: endl;  // Выведет [10, 20]
     }
 
+
+    // проверка добавления операций
+    MSOperation op1 = {0, 1, 10, 20};
+    MSOperation op2 = {1, 2, 30, 40};
+
+    container.add_2(&op1);
+    container.add_2(&op2);
+
+    for (int val : container.getData()) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+
+    for (MSOperation* op : container.getData_2()) {
+        std::cout << op->nJobIndex << " " << op->nOperationIndex << " "
+                  << op->nStartTime << " " << op->nFinishTime << std::endl;
+    }
+
+
     return 0;
 }
