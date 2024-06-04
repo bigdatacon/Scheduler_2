@@ -26,14 +26,17 @@ py::class_<MSOperation>(m, "MSOperation")
 py::class_<DataContainer>(m, "DataContainer")
 .def(py::init<>())
 .def("add", &DataContainer::add)
-.def("add_2", [](DataContainer &self, std::shared_ptr<MSOperation> mo) {
-self.add_2(mo.get());
-})
+.def("add_2", &DataContainer::add_2)
 .def("getData", &DataContainer::getData)
 .def("getData_2", [](const DataContainer &self) {
-std::vector<std::shared_ptr<MSOperation>> result;
+std::vector<py::dict> result;
 for (auto* op : self.getData_2()) {
-result.push_back(std::make_shared<MSOperation>(*op));
+py::dict d;
+d["nJobIndex"] = op->nJobIndex;
+d["nOperationIndex"] = op->nOperationIndex;
+d["nStartTime"] = op->nStartTime;
+d["nFinishTime"] = op->nFinishTime;
+result.push_back(d);
 }
 return result;
 });
