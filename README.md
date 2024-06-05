@@ -2,7 +2,7 @@
 
 A1) Запуск церез whl файл локально(в корне):  
 python3 setup.py build_ext --inplace  
-python3 setup.py install  
+python3 setup.py install    
 
 если появятся какие либо ошибки в командах выше, то выполнить
 их после pip install dist/my_module-1.0-cp310-cp310-linux_x86_64.whl
