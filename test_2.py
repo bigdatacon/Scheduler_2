@@ -2,8 +2,6 @@ import my_module
 
 def test_data_container():
     container = my_module.DataContainer()
-    container.add(10)
-    container.add(20)
 
     op1 = my_module.MSOperation()
     op1.nJobIndex = 0
@@ -17,24 +15,26 @@ def test_data_container():
     op2.nStartTime = 30
     op2.nFinishTime = 40
 
-    container.add_2(op1)
-    container.add_2(op2)
+    # Добавляем операции в разные индексы
+    container.add_2(0, op1)
+    container.add_2(1, op2)
 
-    print("container.getData()")
-    print(container.getData())
+    data_2_index_0 = container.getData_2(0)
+    for op in data_2_index_0:
+        print(f"Index 0 -> JobIndex: {op.nJobIndex}, OperationIndex: {op.nOperationIndex}, StartTime: {op.nStartTime}, FinishTime: {op.nFinishTime}")
 
-    print("Проверка что может указатели получить из container.getData_2()")
-    data_2 = container.getData_2()
-    for op in data_2:
-        print(f"JobIndex: {op['nJobIndex']}, OperationIndex: {op['nOperationIndex']}, StartTime: {op['nStartTime']}, FinishTime: {op['nFinishTime']}")
+    data_2_index_1 = container.getData_2(1)
+    for op in data_2_index_1:
+        print(f"Index 1 -> JobIndex: {op.nJobIndex}, OperationIndex: {op.nOperationIndex}, StartTime: {op.nStartTime}, FinishTime: {op.nFinishTime}")
 
-    # Использование функции add_arrays
-    result = my_module.add_arrays([1, 2, 3], [4, 5, 6])
-    print("my_module.add_arrays")
-    print(result)  # Выведет [5, 7, 9]
+    my_class = my_module.MyClass(container)
+    data_container = my_class.GetDataContainer()
+    data_2_from_class = data_container.getData_2(0)
+    for op in data_2_from_class:
+        print(f"From MyClass -> Index 0 -> JobIndex: {op.nJobIndex}, OperationIndex: {op.nOperationIndex}, StartTime: {op.nStartTime}, FinishTime: {op.nFinishTime}")
 
 
-    # Использование класса
+
     print("Использование класса  CMachine: ")
     machine = my_module.CMachine()
     machine.SetDischarge(15)

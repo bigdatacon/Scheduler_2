@@ -1,8 +1,7 @@
 #pragma once
 #include <vector>
 
-struct MSOperation
-{
+struct MSOperation {
     int nJobIndex;
     int nOperationIndex;
     int nStartTime;
@@ -11,23 +10,33 @@ struct MSOperation
 
 class DataContainer {
 public:
-    void add(int number) {
-        data.push_back(number);
+    void add_2(int index, MSOperation* mo) {
+        if (index >= data_2.size()) {
+            data_2.resize(index + 1);
+        }
+        data_2[index].push_back(mo);
     }
 
-    void add_2(MSOperation* mo) {
-        data_2.push_back(mo);
+    std::vector<MSOperation*> getData_2(int nNum) const {
+        return data_2[nNum];
     }
-
-    std::vector<int> getData() const {
-        return data;
-    }
-    std::vector<MSOperation*> getData_2() const {
-        return data_2;
-    }
-
 
 private:
-    std::vector<int> data;
-    std::vector<MSOperation*> data_2;
+    std::vector<std::vector<MSOperation*>> data_2;
+};
+
+class MyClass {
+public:
+    MyClass(DataContainer* pDataContainer) : m_pDataContainer(pDataContainer) {}
+
+    void Solve() {
+        // calculations...
+    }
+
+    DataContainer* GetDataContainer() const {
+        return m_pDataContainer;
+    }
+
+private:
+    DataContainer* m_pDataContainer;
 };
