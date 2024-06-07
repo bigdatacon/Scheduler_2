@@ -25,7 +25,7 @@ PYBIND11_MODULE(my_module, m) {
     py::class_<DataContainer>(m, "DataContainer")
             .def(py::init<>())
             .def("add_2", &DataContainer::add_2)
-            .def("getData_2", &DataContainer::getData_2);
+            .def("getData_2", &DataContainer::getData_2, py::return_value_policy::reference_internal);
 
     // Регистрация класса MyClass
     py::class_<MyClass>(m, "MyClass")
