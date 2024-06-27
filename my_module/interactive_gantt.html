@@ -95,39 +95,38 @@
                     d3.select(this).raise().attr('stroke', 'black');
                 })
                 .on('drag', function (event, d) {
-                    let newX = Math.max(0, Math.min(width - (x(d.Finish) - x(d.Start)), event.x));
+                    const rect = d3.select(this).select('rect');
+                    const text = d3.select(this).select('text');
+
+                    let newX = Math.max(0, Math.min(width - rect.attr('width'), event.x));
                     let newY = Math.max(0, Math.min(height - y.bandwidth(), event.y));
 
-                    d3.select(this).select('rect')
-                        .attr('x', newX)
-                        .attr('y', newY);
+                    rect.attr('x', newX);
+                    rect.attr('y', newY);
 
-                    d3.select(this).select('text')
-                        .attr('x', newX + (x(d.Finish) - x(d.Start)) / 2)
-                        .attr('y', newY + y.bandwidth() / 2);
+                    text.attr('x', newX + rect.attr('width') / 2);
+                    text.attr('y', newY + y.bandwidth() / 2);
                 })
                 .on('end', function (event, d) {
                     d3.select(this).attr('stroke', null);
 
                     // Ensure no overlapping
                     let overlaps = false;
+                    const bar = d3.select(this).select('rect');
+                    const x1 = +bar.attr('x');
+                    const y1 = +bar.attr('y');
+                    const width1 = +bar.attr('width');
+                    const height1 = +bar.attr('height');
+
                     svg.selectAll('.bar-group').each(function () {
-                        const bar = d3.select(this).select('rect');
-                        const x1 = +bar.attr('x');
-                        const y1 = +bar.attr('y');
-                        const width1 = +bar.attr('width');
-                        const height1 = +bar.attr('height');
+                        if (this !== d3.select(bar.node().parentNode).node()) {
+                            const otherBar = d3.select(this).select('rect');
+                            const x2 = +otherBar.attr('x');
+                            const y2 = +otherBar.attr('y');
+                            const width2 = +otherBar.attr('width');
+                            const height2 = +otherBar.attr('height');
 
-                        if (x1 !== newX || y1 !== newY) {
-                            const x2 = newX;
-                            const y2 = newY;
-                            const width2 = x(d.Finish) - x(d.Start);
-                            const height2 = y.bandwidth();
-
-                            if (x1 < x2 + width2 &&
-                                x1 + width1 > x2 &&
-                                y1 < y2 + height2 &&
-                                y1 + height1 > y2) {
+                            if (x1 < x2 + width2 && x1 + width1 > x2 && y1 < y2 + height2 && y1 + height1 > y2) {
                                 overlaps = true;
                             }
                         }
@@ -135,12 +134,12 @@
 
                     if (overlaps) {
                         d3.select(this).select('rect')
-                            .attr('x', d => x(d.Start))
-                            .attr('y', d => y(d[groupKey]));
+                            .attr('x', x(d.Start))
+                            .attr('y', y(d[groupKey]));
 
                         d3.select(this).select('text')
-                            .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
-                            .attr('y', d => y(d[groupKey]) + y.bandwidth() / 2);
+                            .attr('x', x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
+                            .attr('y', y(d[groupKey]) + y.bandwidth() / 2);
                     }
                 });
 
