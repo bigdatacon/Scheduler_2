@@ -1,13 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-//#include <nlohmann/json.hpp>
 #include "../json/include/nlohmann/json.hpp"
-
-// как запускать
-//g++ -o serialize_operations serialize_operations.cpp
-//./serialize_operations
-
 
 struct MSOperation {
     int jobIndex;
@@ -23,17 +17,17 @@ struct JSOperation {
     int finishTime;
 };
 
-void serialize_operations(const std::vector<std::vector<MSOperation>>& ms_operations, const std::vector<std::vector<JSOperation>>& js_operations) {
+void serialize_operations(const std::vector<std::vector<MSOperation*>>& ms_operations, const std::vector<std::vector<JSOperation*>>& js_operations) {
     nlohmann::json ms_operations_data = nlohmann::json::array();
     nlohmann::json js_operations_data = nlohmann::json::array();
 
     for (const auto& job_ops : ms_operations) {
         for (const auto& op : job_ops) {
             ms_operations_data.push_back({
-                                                 {"Machine", "M" + std::to_string(op.operationIndex)},
-                                                 {"Start", op.startTime},
-                                                 {"Finish", op.finishTime},
-                                                 {"Job", std::to_string(op.jobIndex)}
+                                                 {"Machine", "M" + std::to_string(op->operationIndex)},
+                                                 {"Start", op->startTime},
+                                                 {"Finish", op->finishTime},
+                                                 {"Job", std::to_string(op->jobIndex)}
                                          });
         }
     }
@@ -41,10 +35,10 @@ void serialize_operations(const std::vector<std::vector<MSOperation>>& ms_operat
     for (const auto& job_ops : js_operations) {
         for (const auto& op : job_ops) {
             js_operations_data.push_back({
-                                                 {"Job", "J" + std::to_string(op.operationIndex)},
-                                                 {"Start", op.startTime},
-                                                 {"Finish", op.finishTime},
-                                                 {"Machine", "M" + std::to_string(op.machineIndex)}
+                                                 {"Job", "J" + std::to_string(op->operationIndex)},
+                                                 {"Start", op->startTime},
+                                                 {"Finish", op->finishTime},
+                                                 {"Machine", "M" + std::to_string(op->machineIndex)}
                                          });
         }
     }
@@ -58,31 +52,31 @@ void serialize_operations(const std::vector<std::vector<MSOperation>>& ms_operat
 }
 
 int main() {
-
-
-    std::vector<std::vector<MSOperation>> ms_operations = {
-            {{1, 1, 10, 30}, {1, 2, 40, 70}},
-            {{2, 1, 50, 90}, {2, 2, 100, 140}},
-            {{3, 1, 110, 150}, {3, 2, 160, 200}}
+    std::vector<std::vector<MSOperation*>> ms_operations = {
+            {new MSOperation{1, 1, 10, 30}, new MSOperation{1, 2, 40, 70}},
+            {new MSOperation{2, 1, 50, 90}, new MSOperation{2, 2, 100, 140}},
+            {new MSOperation{3, 1, 110, 150}, new MSOperation{3, 2, 160, 200}}
     };
 
-    std::vector<std::vector<JSOperation>> js_operations = {
-            {{1, 1, 10, 30}, {1, 4, 40, 70}},
-            {{2, 5, 50, 90}, {2, 8, 100, 140}},
-            {{3, 5, 110, 150}, {3, 12, 160, 200}}
+    std::vector<std::vector<JSOperation*>> js_operations = {
+            {new JSOperation{1, 1, 10, 30}, new JSOperation{1, 4, 40, 70}},
+            {new JSOperation{2, 5, 50, 90}, new JSOperation{2, 8, 100, 140}},
+            {new JSOperation{3, 5, 110, 150}, new JSOperation{3, 12, 160, 200}}
     };
-
-
-//    std::vector<std::vector<MSOperation>> ms_operations = {
-//            {{1, 1, 10, 30}, {1, 2, 40, 70}},
-//            {{2, 3, 50, 90}}
-//    };
-//
-//    std::vector<std::vector<JSOperation>> js_operations = {
-//            {{1, 1, 10, 30}, {1, 2, 40, 70}},
-//            {{2, 3, 50, 90}}
-//    };
 
     serialize_operations(ms_operations, js_operations);
+
+    for (auto& job_ops : ms_operations) {
+        for (auto& op : job_ops) {
+            delete op;
+        }
+    }
+
+    for (auto& job_ops : js_operations) {
+        for (auto& op : job_ops) {
+            delete op;
+        }
+    }
+
     return 0;
 }
