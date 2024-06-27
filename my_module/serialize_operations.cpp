@@ -58,15 +58,30 @@ void serialize_operations(const std::vector<std::vector<MSOperation>>& ms_operat
 }
 
 int main() {
+
+
     std::vector<std::vector<MSOperation>> ms_operations = {
             {{1, 1, 10, 30}, {1, 2, 40, 70}},
-            {{2, 3, 50, 90}}
+            {{2, 1, 50, 90}, {2, 2, 100, 140}},
+            {{3, 1, 110, 150}, {3, 2, 160, 200}}
     };
 
     std::vector<std::vector<JSOperation>> js_operations = {
-            {{1, 1, 10, 30}, {1, 2, 40, 70}},
-            {{2, 3, 50, 90}}
+            {{1, 1, 10, 30}, {1, 4, 40, 70}},
+            {{2, 5, 50, 90}, {2, 8, 100, 140}},
+            {{3, 5, 110, 150}, {3, 12, 160, 200}}
     };
+
+
+//    std::vector<std::vector<MSOperation>> ms_operations = {
+//            {{1, 1, 10, 30}, {1, 2, 40, 70}},
+//            {{2, 3, 50, 90}}
+//    };
+//
+//    std::vector<std::vector<JSOperation>> js_operations = {
+//            {{1, 1, 10, 30}, {1, 2, 40, 70}},
+//            {{2, 3, 50, 90}}
+//    };
 
     serialize_operations(ms_operations, js_operations);
     return 0;
