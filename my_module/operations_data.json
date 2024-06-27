@@ -9,31 +9,31 @@
         {
             "Finish": 70,
             "Job": "J1",
-            "Machine": "M4",
+            "Machine": "M2",
             "Start": 40
         },
         {
             "Finish": 90,
             "Job": "J2",
-            "Machine": "M5",
+            "Machine": "M1",
             "Start": 50
         },
         {
             "Finish": 140,
             "Job": "J2",
-            "Machine": "M8",
+            "Machine": "M2",
             "Start": 100
         },
         {
             "Finish": 150,
             "Job": "J3",
-            "Machine": "M5",
+            "Machine": "M1",
             "Start": 110
         },
         {
             "Finish": 200,
             "Job": "J3",
-            "Machine": "M12",
+            "Machine": "M2",
             "Start": 160
         }
     ],

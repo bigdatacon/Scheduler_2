@@ -59,9 +59,9 @@ int main() {
     };
 
     std::vector<std::vector<JSOperation*>> js_operations = {
-            {new JSOperation{1, 1, 10, 30}, new JSOperation{1, 4, 40, 70}},
-            {new JSOperation{2, 5, 50, 90}, new JSOperation{2, 8, 100, 140}},
-            {new JSOperation{3, 5, 110, 150}, new JSOperation{3, 12, 160, 200}}
+            {new JSOperation{1, 1, 10, 30}, new JSOperation{1, 2, 40, 70}},
+            {new JSOperation{2, 1, 50, 90}, new JSOperation{2, 2, 100, 140}},
+            {new JSOperation{3, 1, 110, 150}, new JSOperation{3, 2, 160, 200}}
     };
 
     serialize_operations(ms_operations, js_operations);

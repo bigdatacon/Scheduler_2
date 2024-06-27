@@ -32,11 +32,11 @@
         const jobGantt = d3.select('#job-gantt');
 
         d3.json('operations_data.json').then(data => {
-            drawGanttChart(machineGantt, data.ms_operations, 'Machine');
-            drawGanttChart(jobGantt, data.js_operations, 'Job');
+            drawGanttChart(machineGantt, data.ms_operations, 'Machine', 'Job');
+            drawGanttChart(jobGantt, data.js_operations, 'Job', 'Machine');
         });
 
-        function drawGanttChart(container, data, groupKey) {
+        function drawGanttChart(container, data, groupKey, labelKey) {
             const margin = {top: 20, right: 20, bottom: 20, left: 40};
             const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
             const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
@@ -52,7 +52,7 @@
                 .range([0, width]);
 
             const y = d3.scaleBand()
-                .domain(data.map(d => d[groupKey]))
+                .domain([...new Set(data.map(d => d[groupKey]))])
                 .range([0, height])
                 .padding(0.1);
 
@@ -67,16 +67,27 @@
                 .attr('class', 'y-axis')
                 .call(d3.axisLeft(y));
 
-            svg.selectAll('.bar')
+            const bars = svg.selectAll('.bar')
                 .data(data)
                 .enter()
-                .append('rect')
+                .append('g')
+                .attr('class', 'bar-group');
+
+            bars.append('rect')
                 .attr('class', 'bar')
                 .attr('x', d => x(d.Start))
                 .attr('y', d => y(d[groupKey]))
                 .attr('width', d => x(d.Finish) - x(d.Start))
                 .attr('height', y.bandwidth())
-                .attr('fill', d => color(d.Job));  // Color by Job
+                .attr('fill', d => color(d.Job));
+
+            bars.append('text')
+                .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
+                .attr('y', d => y(d[groupKey]) + y.bandwidth() / 2)
+                .attr('dy', '.35em')
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'white')
+                .text(d => d[labelKey]);
 
             // Adding drag functionality
             const drag = d3.drag()
@@ -84,15 +95,56 @@
                     d3.select(this).raise().attr('stroke', 'black');
                 })
                 .on('drag', function (event, d) {
-                    d3.select(this)
-                        .attr('x', d.x = event.x)
-                        .attr('y', d.y = event.y);
+                    let newX = Math.max(0, Math.min(width - (x(d.Finish) - x(d.Start)), event.x));
+                    let newY = Math.max(0, Math.min(height - y.bandwidth(), event.y));
+
+                    d3.select(this).select('rect')
+                        .attr('x', newX)
+                        .attr('y', newY);
+
+                    d3.select(this).select('text')
+                        .attr('x', newX + (x(d.Finish) - x(d.Start)) / 2)
+                        .attr('y', newY + y.bandwidth() / 2);
                 })
                 .on('end', function (event, d) {
                     d3.select(this).attr('stroke', null);
+
+                    // Ensure no overlapping
+                    let overlaps = false;
+                    svg.selectAll('.bar-group').each(function () {
+                        const bar = d3.select(this).select('rect');
+                        const x1 = +bar.attr('x');
+                        const y1 = +bar.attr('y');
+                        const width1 = +bar.attr('width');
+                        const height1 = +bar.attr('height');
+
+                        if (x1 !== newX || y1 !== newY) {
+                            const x2 = newX;
+                            const y2 = newY;
+                            const width2 = x(d.Finish) - x(d.Start);
+                            const height2 = y.bandwidth();
+
+                            if (x1 < x2 + width2 &&
+                                x1 + width1 > x2 &&
+                                y1 < y2 + height2 &&
+                                y1 + height1 > y2) {
+                                overlaps = true;
+                            }
+                        }
+                    });
+
+                    if (overlaps) {
+                        d3.select(this).select('rect')
+                            .attr('x', d => x(d.Start))
+                            .attr('y', d => y(d[groupKey]));
+
+                        d3.select(this).select('text')
+                            .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
+                            .attr('y', d => y(d[groupKey]) + y.bandwidth() / 2);
+                    }
                 });
 
-            svg.selectAll('.bar').call(drag);
+            bars.call(drag);
         }
     });
 </script>
