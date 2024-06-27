@@ -1,3 +1,16 @@
+# Запуск графика из папки my_module (все операции в папке my_module):
+-- сериализация данных в json:  
+g++ -o serialize_operations serialize_operations.cpp
+./serialize_operations  
+
+-- один раз дать права на операции с файлом:  
+chmod +x run_server.sh  
+-- запуск карты :  
+./run_server.sh  
+
+карта доступна по http://localhost:8000/interactive_gantt.html
+
+
 # Блоки с whl:
 
 A1) Запуск церез whl файл локально(в корне):  
@@ -23,7 +36,7 @@ A2) Запуск церез whl файл на другом компьютере(
 -----------------------------------------   
 
 
-
+  
 
 0. Запуск pybind без CMAKE без task_json:  
 в корне проекта ::   
