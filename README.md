@@ -1,5 +1,8 @@
+
 # Запуск графика из папки my_module (все операции в папке my_module):
 -- сериализация данных в json:  
+wget https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h
+  
 g++ -o serialize_operations serialize_operations.cpp
 ./serialize_operations  
 

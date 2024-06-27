@@ -31,12 +31,23 @@
         const machineGantt = d3.select('#machine-gantt');
         const jobGantt = d3.select('#job-gantt');
 
-        d3.json('operations_data.json').then(data => {
-            drawGanttChart(machineGantt, data.ms_operations, 'Machine', 'Job');
-            drawGanttChart(jobGantt, data.js_operations, 'Job', 'Machine');
+        // Fetch data from the server
+        d3.json('http://localhost:8080/operations_data').then(data => {
+            console.log("Data loaded from server:", data);
+            if (data && data.ms_operations && data.js_operations) {
+                drawGanttChart(machineGantt, data.ms_operations, 'Machine', 'Job');
+                drawGanttChart(jobGantt, data.js_operations, 'Job', 'Machine');
+            } else {
+                console.error('Invalid data format:', data);
+            }
+        }).catch(error => {
+            console.error('Error fetching data:', error);
         });
 
         function drawGanttChart(container, data, groupKey, labelKey) {
+            console.log(`Drawing Gantt chart for ${groupKey}`);
+            console.log('Data:', data);
+
             const margin = {top: 20, right: 20, bottom: 20, left: 40};
             const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
             const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
