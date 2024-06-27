@@ -1,0 +1,42 @@
+{
+    "js_operations": [
+        {
+            "Finish": 30,
+            "Job": "J1",
+            "Machine": "M1",
+            "Start": 10
+        },
+        {
+            "Finish": 70,
+            "Job": "J1",
+            "Machine": "M2",
+            "Start": 40
+        },
+        {
+            "Finish": 90,
+            "Job": "J2",
+            "Machine": "M3",
+            "Start": 50
+        }
+    ],
+    "ms_operations": [
+        {
+            "Finish": 30,
+            "Job": "1",
+            "Machine": "M1",
+            "Start": 10
+        },
+        {
+            "Finish": 70,
+            "Job": "1",
+            "Machine": "M2",
+            "Start": 40
+        },
+        {
+            "Finish": 90,
+            "Job": "2",
+            "Machine": "M3",
+            "Start": 50
+        }
+    ]
+}

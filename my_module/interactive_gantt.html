@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Gantt Charts</title>
+    <style>
+        .chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        .gantt {
+            width: 90%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+<div class="chart" id="machine-chart">
+    <h2>Processing Time vs Machine</h2>
+    <div class="gantt" id="machine-gantt"></div>
+</div>
+<div class="chart" id="job-chart">
+    <h2>Processing Time vs Jobs</h2>
+    <div class="gantt" id="job-gantt"></div>
+</div>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const machineGantt = d3.select('#machine-gantt');
+        const jobGantt = d3.select('#job-gantt');
+
+        d3.json('operations_data.json').then(data => {
+            drawGanttChart(machineGantt, data.ms_operations, 'Machine');
+            drawGanttChart(jobGantt, data.js_operations, 'Job');
+        });
+
+        function drawGanttChart(container, data, groupKey) {
+            const margin = {top: 20, right: 20, bottom: 20, left: 40};
+            const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
+            const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
+
+            const svg = container.append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.Finish)])
+                .range([0, width]);
+
+            const y = d3.scaleBand()
+                .domain(data.map(d => d[groupKey]))
+                .range([0, height])
+                .padding(0.1);
+
+            svg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            svg.append('g')
+                .attr('class', 'y-axis')
+                .call(d3.axisLeft(y));
+
+            svg.selectAll('.bar')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.Start))
+                .attr('y', d => y(d[groupKey]))
+                .attr('width', d => x(d.Finish) - x(d.Start))
+                .attr('height', y.bandwidth())
+                .attr('fill', 'steelblue');
+
+            // Adding drag functionality
+            const drag = d3.drag()
+                .on('start', function (event, d) {
+                    d3.select(this).raise().attr('stroke', 'black');
+                })
+                .on('drag', function (event, d) {
+                    d3.select(this)
+                        .attr('x', d.x = event.x)
+                        .attr('y', d.y = event.y);
+                })
+                .on('end', function (event, d) {
+                    d3.select(this).attr('stroke', null);
+                });
+
+            svg.selectAll('.bar').call(drag);
+        }
+    });
+</script>
+</body>
+</html>
