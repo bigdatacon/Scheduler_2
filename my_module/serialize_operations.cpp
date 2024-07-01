@@ -12,59 +12,60 @@ struct MSOperation {
 };
 
 struct JSOperation {
-    int operationIndex;
     int machineIndex;
+    int operationIndex;
     int startTime;
     int finishTime;
 };
 
+
+// Функция для сериализации данных операций
 void serialize_operations(const std::vector<std::vector<MSOperation*>>& ms_operations, const std::vector<std::vector<JSOperation*>>& js_operations) {
     nlohmann::json ms_operations_data = nlohmann::json::array();
     nlohmann::json js_operations_data = nlohmann::json::array();
 
-    for (const auto& job_ops : ms_operations) {
-        for (const auto& op : job_ops) {
+    // Сериализация данных для ms_operations
+    for (int i = 0; i <  ms_operations.size(); ++ i) {
+        for (const auto& op : ms_operations[i]) {
             ms_operations_data.push_back({
-                                                 {"Machine", "M" + std::to_string(op->operationIndex)},
+                                                 {"Job", op->jobIndex},
+                                                 {"Machine", i+1},
                                                  {"Start", op->startTime},
-                                                 {"Finish", op->finishTime},
-                                                 {"Job", std::to_string(op->jobIndex)}
+                                                 {"Finish", op->finishTime}
                                          });
         }
     }
 
-    for (const auto& job_ops : js_operations) {
-        for (const auto& op : job_ops) {
+
+    // Сериализация данных для js_operations
+    for (int i = 0; i < js_operations.size(); ++i) {
+        for (const auto& op : js_operations[i]) {
             js_operations_data.push_back({
-                                                 {"Job", "J" + std::to_string(op->operationIndex)},
+                                                 {"Job", i+1},
+                                                 {"Machine", op->machineIndex},
                                                  {"Start", op->startTime},
-                                                 {"Finish", op->finishTime},
-                                                 {"Machine", "M" + std::to_string(op->machineIndex)}
+                                                 {"Finish", op->finishTime}
                                          });
         }
     }
 
+    // Создание общего JSON объекта
     nlohmann::json data;
     data["ms_operations"] = ms_operations_data;
     data["js_operations"] = js_operations_data;
 
+    // Запись JSON данных в файл
     std::ofstream file("operations_data.json");
-    file << data.dump(4);
+    if (file.is_open()) {
+        file << data.dump(4); // Форматированный вывод JSON
+        file.close();
+    } else {
+        std::cerr << "Не удалось открыть файл для записи" << std::endl;
+    }
 }
 
-int main() {
-//    std::vector<std::vector<MSOperation*>> ms_operations = {
-//            {new MSOperation{1, 1, 10, 30}, new MSOperation{1, 2, 40, 70}},
-//            {new MSOperation{2, 1, 50, 90}, new MSOperation{2, 2, 100, 140}},
-//            {new MSOperation{3, 1, 110, 150}, new MSOperation{3, 2, 160, 200}}
-//    };
-//
-//    std::vector<std::vector<JSOperation*>> js_operations = {
-//            {new JSOperation{1, 1, 10, 30}, new JSOperation{1, 2, 40, 70}},
-//            {new JSOperation{2, 1, 50, 90}, new JSOperation{2, 2, 100, 140}},
-//            {new JSOperation{3, 1, 110, 150}, new JSOperation{3, 2, 160, 200}}
-//    };
 
+int main() {
 
     std::vector<std::vector<MSOperation*>> ms_operations = {
             {new MSOperation{1, 1, 0, 36}, new MSOperation{1, 5, 144, 166}},
