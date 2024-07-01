@@ -14,6 +14,10 @@
             width: 90%;
             height: 400px;
         }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -32,18 +36,19 @@
         const jobGantt = d3.select('#job-gantt');
 
         d3.json('operations_data.json').then(data => {
-            drawGanttChart(machineGantt, data.ms_operations, 'Machine', 'Job');
-            drawGanttChart(jobGantt, data.js_operations, 'Job', 'Machine');
+            const machineData = data.ms_operations;
+            const jobData = data.js_operations;
+
+            drawGanttChart(machineGantt, machineData, 'Machine', 'Job', jobData);
+            drawGanttChart(jobGantt, jobData, 'Job', 'Machine', machineData);
         });
 
-        function drawGanttChart(container, data, groupKey, labelKey) {
+        function drawGanttChart(container, data, groupKey, labelKey, syncData) {
             const margin = {top: 20, right: 20, bottom: 20, left: 40};
             const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
             const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
 
             const svg = container.append('svg')
-                .attr('width', '100%')
-                .attr('height', '100%')
                 .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
                 .attr('preserveAspectRatio', 'xMinYMin meet')
                 .append('g')
@@ -81,7 +86,9 @@
                 .attr('y', d => y(d[groupKey]))
                 .attr('width', d => x(d.Finish) - x(d.Start))
                 .attr('height', y.bandwidth())
-                .attr('fill', d => color(d.Job));
+                .attr('fill', d => color(d.Job))
+                .attr('data-job', d => d.Job)
+                .attr('data-label', d => d[labelKey]);
 
             bars.append('text')
                 .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
@@ -113,10 +120,17 @@
                     const otherChartSelector = container.attr('id') === 'machine-gantt' ? '#job-gantt' : '#machine-gantt';
                     const otherBars = d3.select(otherChartSelector).selectAll('.bar-group');
                     otherBars.each(function () {
-                        const otherBar = d3.select(this).select(`rect[data-job="${d.Job}"]`);
+                        const otherBar = d3.select(this).select(`rect[data-job="${d.Job}"][data-label="${d[labelKey]}"]`);
                         if (!otherBar.empty()) {
                             otherBar.attr('x', newX);
                             otherBar.attr('y', newY);
+
+                            // Update the synced data
+                            let syncItem = syncData.find(item => item.Job === d.Job && item[labelKey] === d[labelKey]);
+                            if (syncItem) {
+                                syncItem.Start = x.invert(newX);
+                                syncItem.Finish = x.invert(newX) + (d.Finish - d.Start);
+                            }
                         }
                     });
                 })
