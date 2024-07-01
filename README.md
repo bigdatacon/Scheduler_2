@@ -8,7 +8,7 @@ chmod +x run_server.sh
 -- запуск карты :  
 ./run_server.sh  
 
-карта доступна по http://localhost:8000/interactive_gantt.html
+карта доступна  http://0.0.0.0:8000/interactive_gantt.html
 
 
 # Блоки с whl:
