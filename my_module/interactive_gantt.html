@@ -35,35 +35,22 @@
         const machineGantt = d3.select('#machine-gantt');
         const jobGantt = d3.select('#job-gantt');
 
-        // Пример данных из JSON
-        const data = {
-            ms_operations: [
-                { "Job": 1, "Machine": 1, "Start": 0, "Finish": 36 },
-                { "Job": 1, "Machine": 1, "Start": 144, "Finish": 166 },
-                { "Job": 1, "Machine": 2, "Start": 36, "Finish": 64 },
-                { "Job": 1, "Machine": 2, "Start": 64, "Finish": 107 },
-                { "Job": 1, "Machine": 2, "Start": 107, "Finish": 144 }
-            ],
-            js_operations: [
-                { "Job": 1, "Machine": 1, "Start": 0, "Finish": 36 },
-                { "Job": 1, "Machine": 2, "Start": 36, "Finish": 64 },
-                { "Job": 1, "Machine": 2, "Start": 64, "Finish": 107 },
-                { "Job": 1, "Machine": 2, "Start": 107, "Finish": 144 },
-                { "Job": 1, "Machine": 1, "Start": 144, "Finish": 166 }
-            ]
-        };
+        // Загрузка данных из JSON файла
+        d3.json('operations_data.json').then(data => {
+            const machineData = data.ms_operations;
+            const jobData = data.js_operations;
 
-        const machineData = data.ms_operations;
-        const jobData = data.js_operations;
+            // Проверка количества jobs и машин
+            if (jobData.length !== 5 || machineData.length !== 5) {
+                console.error('Ошибка: данные не соответствуют ожидаемому формату.');
+                return;
+            }
 
-        // Проверка количества jobs и машин
-        if (jobData.length !== 5 || machineData.length !== 5) {
-            console.error('Ошибка: данные не соответствуют ожидаемому формату.');
-            return;
-        }
-
-        drawGanttChart(machineGantt, machineData, 'Machine', 'Job');
-        drawGanttChart(jobGantt, jobData, 'Job', 'Machine');
+            drawGanttChart(machineGantt, machineData, 'Machine', 'Job');
+            drawGanttChart(jobGantt, jobData, 'Job', 'Machine');
+        }).catch(error => {
+            console.error('Ошибка загрузки данных:', error);
+        });
     });
 
     function drawGanttChart(container, data, groupKey, labelKey) {

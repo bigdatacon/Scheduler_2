@@ -12,8 +12,8 @@ struct MSOperation {
 };
 
 struct JSOperation {
-    int machineIndex;
     int operationIndex;
+    int machineIndex;
     int startTime;
     int finishTime;
 };
