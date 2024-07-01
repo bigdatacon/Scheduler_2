@@ -3,6 +3,7 @@
 #include <fstream>
 #include "../json/include/nlohmann/json.hpp"
 
+
 struct MSOperation {
     int jobIndex;
     int operationIndex;
@@ -52,16 +53,26 @@ void serialize_operations(const std::vector<std::vector<MSOperation*>>& ms_opera
 }
 
 int main() {
+//    std::vector<std::vector<MSOperation*>> ms_operations = {
+//            {new MSOperation{1, 1, 10, 30}, new MSOperation{1, 2, 40, 70}},
+//            {new MSOperation{2, 1, 50, 90}, new MSOperation{2, 2, 100, 140}},
+//            {new MSOperation{3, 1, 110, 150}, new MSOperation{3, 2, 160, 200}}
+//    };
+//
+//    std::vector<std::vector<JSOperation*>> js_operations = {
+//            {new JSOperation{1, 1, 10, 30}, new JSOperation{1, 2, 40, 70}},
+//            {new JSOperation{2, 1, 50, 90}, new JSOperation{2, 2, 100, 140}},
+//            {new JSOperation{3, 1, 110, 150}, new JSOperation{3, 2, 160, 200}}
+//    };
+
+
     std::vector<std::vector<MSOperation*>> ms_operations = {
-            {new MSOperation{1, 1, 10, 30}, new MSOperation{1, 2, 40, 70}},
-            {new MSOperation{2, 1, 50, 90}, new MSOperation{2, 2, 100, 140}},
-            {new MSOperation{3, 1, 110, 150}, new MSOperation{3, 2, 160, 200}}
+            {new MSOperation{1, 1, 0, 36}, new MSOperation{1, 5, 144, 166}},
+            {new MSOperation{1, 2, 36, 64}, new MSOperation{1, 3, 64, 107}, new MSOperation{1, 4, 107, 144}}
     };
 
     std::vector<std::vector<JSOperation*>> js_operations = {
-            {new JSOperation{1, 1, 10, 30}, new JSOperation{1, 2, 40, 70}},
-            {new JSOperation{2, 1, 50, 90}, new JSOperation{2, 2, 100, 140}},
-            {new JSOperation{3, 1, 110, 150}, new JSOperation{3, 2, 160, 200}}
+            {new JSOperation{1, 1, 0, 36}, new JSOperation{2, 2, 36, 64}, new JSOperation{3, 2, 64, 107}, new JSOperation{4, 2, 107, 144}, new JSOperation{5, 1, 144, 166}}
     };
 
     serialize_operations(ms_operations, js_operations);
