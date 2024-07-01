@@ -40,11 +40,7 @@
             const machineData = data.ms_operations;
             const jobData = data.js_operations;
 
-            // Проверка количества jobs и машин
-            if (jobData.length !== 5 || machineData.length !== 5) {
-                console.error('Ошибка: данные не соответствуют ожидаемому формату.');
-                return;
-            }
+
 
             drawGanttChart(machineGantt, machineData, 'Machine', 'Job');
             drawGanttChart(jobGantt, jobData, 'Job', 'Machine');
