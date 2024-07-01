@@ -35,144 +35,90 @@
         const machineGantt = d3.select('#machine-gantt');
         const jobGantt = d3.select('#job-gantt');
 
-        d3.json('operations_data.json').then(data => {
-            const machineData = data.ms_operations;
-            const jobData = data.js_operations;
+        // Пример данных из JSON
+        const data = {
+            ms_operations: [
+                { "Job": 1, "Machine": 1, "Start": 0, "Finish": 36 },
+                { "Job": 1, "Machine": 1, "Start": 144, "Finish": 166 },
+                { "Job": 1, "Machine": 2, "Start": 36, "Finish": 64 },
+                { "Job": 1, "Machine": 2, "Start": 64, "Finish": 107 },
+                { "Job": 1, "Machine": 2, "Start": 107, "Finish": 144 }
+            ],
+            js_operations: [
+                { "Job": 1, "Machine": 1, "Start": 0, "Finish": 36 },
+                { "Job": 1, "Machine": 2, "Start": 36, "Finish": 64 },
+                { "Job": 1, "Machine": 2, "Start": 64, "Finish": 107 },
+                { "Job": 1, "Machine": 2, "Start": 107, "Finish": 144 },
+                { "Job": 1, "Machine": 1, "Start": 144, "Finish": 166 }
+            ]
+        };
 
-            drawGanttChart(machineGantt, machineData, 'Machine', 'Job', jobData);
-            drawGanttChart(jobGantt, jobData, 'Job', 'Machine', machineData);
-        });
+        const machineData = data.ms_operations;
+        const jobData = data.js_operations;
 
-        function drawGanttChart(container, data, groupKey, labelKey, syncData) {
-            const margin = {top: 20, right: 20, bottom: 20, left: 40};
-            const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
-            const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
-
-            const svg = container.append('svg')
-                .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
-                .attr('preserveAspectRatio', 'xMinYMin meet')
-                .append('g')
-                .attr('transform', `translate(${margin.left},${margin.top})`);
-
-            const x = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d.Finish)])
-                .range([0, width]);
-
-            const y = d3.scaleBand()
-                .domain([...new Set(data.map(d => d[groupKey]))])
-                .range([0, height])
-                .padding(0.1);
-
-            const color = d3.scaleOrdinal(d3.schemeCategory10);
-
-            svg.append('g')
-                .attr('class', 'x-axis')
-                .attr('transform', `translate(0,${height})`)
-                .call(d3.axisBottom(x));
-
-            svg.append('g')
-                .attr('class', 'y-axis')
-                .call(d3.axisLeft(y));
-
-            const bars = svg.selectAll('.bar')
-                .data(data)
-                .enter()
-                .append('g')
-                .attr('class', 'bar-group');
-
-            bars.append('rect')
-                .attr('class', 'bar')
-                .attr('x', d => x(d.Start))
-                .attr('y', d => y(d[groupKey]))
-                .attr('width', d => x(d.Finish) - x(d.Start))
-                .attr('height', y.bandwidth())
-                .attr('fill', d => color(d.Job))
-                .attr('data-job', d => d.Job)
-                .attr('data-label', d => d[labelKey]);
-
-            bars.append('text')
-                .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
-                .attr('y', d => y(d[groupKey]) + y.bandwidth() / 2)
-                .attr('dy', '.35em')
-                .attr('text-anchor', 'middle')
-                .attr('fill', 'white')
-                .text(d => d[labelKey]);
-
-            // Adding drag functionality
-            const drag = d3.drag()
-                .on('start', function (event, d) {
-                    d3.select(this).raise().attr('stroke', 'black');
-                })
-                .on('drag', function (event, d) {
-                    const rect = d3.select(this).select('rect');
-                    const text = d3.select(this).select('text');
-
-                    let newX = Math.max(0, Math.min(width - rect.attr('width'), event.x));
-                    let newY = Math.max(0, Math.min(height - y.bandwidth(), event.y));
-
-                    rect.attr('x', newX);
-                    rect.attr('y', newY);
-
-                    text.attr('x', newX + rect.attr('width') / 2);
-                    text.attr('y', newY + y.bandwidth() / 2);
-
-                    // Sync movement between the two charts
-                    const otherChartSelector = container.attr('id') === 'machine-gantt' ? '#job-gantt' : '#machine-gantt';
-                    const otherBars = d3.select(otherChartSelector).selectAll('.bar-group');
-                    otherBars.each(function () {
-                        const otherBar = d3.select(this).select(`rect[data-job="${d.Job}"][data-label="${d[labelKey]}"]`);
-                        if (!otherBar.empty()) {
-                            otherBar.attr('x', newX);
-                            otherBar.attr('y', newY);
-
-                            // Update the synced data
-                            let syncItem = syncData.find(item => item.Job === d.Job && item[labelKey] === d[labelKey]);
-                            if (syncItem) {
-                                syncItem.Start = x.invert(newX);
-                                syncItem.Finish = x.invert(newX) + (d.Finish - d.Start);
-                            }
-                        }
-                    });
-                })
-                .on('end', function (event, d) {
-                    d3.select(this).attr('stroke', null);
-
-                    // Ensure no overlapping
-                    let overlaps = false;
-                    const bar = d3.select(this).select('rect');
-                    const x1 = +bar.attr('x');
-                    const y1 = +bar.attr('y');
-                    const width1 = +bar.attr('width');
-                    const height1 = +bar.attr('height');
-
-                    svg.selectAll('.bar-group').each(function () {
-                        if (this !== d3.select(bar.node().parentNode).node()) {
-                            const otherBar = d3.select(this).select('rect');
-                            const x2 = +otherBar.attr('x');
-                            const y2 = +otherBar.attr('y');
-                            const width2 = +otherBar.attr('width');
-                            const height2 = +otherBar.attr('height');
-
-                            if (x1 < x2 + width2 && x1 + width1 > x2 && y1 < y2 + height2 && y1 + height1 > y2) {
-                                overlaps = true;
-                            }
-                        }
-                    });
-
-                    if (overlaps) {
-                        d3.select(this).select('rect')
-                            .attr('x', x(d.Start))
-                            .attr('y', y(d[groupKey]));
-
-                        d3.select(this).select('text')
-                            .attr('x', x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
-                            .attr('y', y(d[groupKey]) + y.bandwidth() / 2);
-                    }
-                });
-
-            bars.call(drag);
+        // Проверка количества jobs и машин
+        if (jobData.length !== 5 || machineData.length !== 5) {
+            console.error('Ошибка: данные не соответствуют ожидаемому формату.');
+            return;
         }
+
+        drawGanttChart(machineGantt, machineData, 'Machine', 'Job');
+        drawGanttChart(jobGantt, jobData, 'Job', 'Machine');
     });
+
+    function drawGanttChart(container, data, groupKey, labelKey) {
+        const margin = { top: 20, right: 20, bottom: 20, left: 40 };
+        const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
+        const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
+
+        const svg = container.append('svg')
+            .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+            .attr('preserveAspectRatio', 'xMinYMin meet')
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.Finish)])
+            .range([0, width]);
+
+        const y = d3.scaleBand()
+            .domain([...new Set(data.map(d => d[groupKey]))])
+            .range([0, height])
+            .padding(0.1);
+
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+        svg.append('g')
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+
+        svg.append('g')
+            .attr('class', 'y-axis')
+            .call(d3.axisLeft(y));
+
+        const bars = svg.selectAll('.bar')
+            .data(data)
+            .enter()
+            .append('g')
+            .attr('class', 'bar-group');
+
+        bars.append('rect')
+            .attr('class', 'bar')
+            .attr('x', d => x(d.Start))
+            .attr('y', d => y(d[groupKey]))
+            .attr('width', d => x(d.Finish) - x(d.Start))
+            .attr('height', y.bandwidth())
+            .attr('fill', d => color(d[labelKey]));
+
+        bars.append('text')
+            .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
+            .attr('y', d => y(d[groupKey]) + y.bandwidth() / 2)
+            .attr('dy', '.35em')
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'white')
+            .text(d => d[labelKey]);
+    }
 </script>
 </body>
 </html>
