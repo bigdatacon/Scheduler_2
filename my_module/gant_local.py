@@ -1,0 +1,182 @@
+import sys
+import json
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+
+# Чтение данных из JSON-файла
+with open('operations_data.json', 'r') as f:
+    data = json.load(f)
+
+html_content = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Gantt Charts</title>
+    <style>
+        .chart {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }}
+        .gantt {{
+            width: 90%;
+            height: 400px;
+        }}
+    </style>
+</head>
+<body>
+<div class="chart" id="machine-chart">
+    <h2>Processing Time vs Machine</h2>
+    <div class="gantt" id="machine-gantt"></div>
+</div>
+<div class="chart" id="job-chart">
+    <h2>Processing Time vs Jobs</h2>
+    <div class="gantt" id="job-gantt"></div>
+</div>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {{
+        const machineGantt = d3.select('#machine-gantt');
+        const jobGantt = d3.select('#job-gantt');
+
+        const data = {json.dumps(data)};
+
+        const machineData = data.ms_operations;
+        const jobData = data.js_operations;
+
+        drawGanttChart(machineGantt, machineData, 'Machine', 'Job');
+        drawGanttChart(jobGantt, jobData, 'Job', 'Machine');
+
+        function drawGanttChart(container, data, groupKey, labelKey) {{
+            const margin = {{top: 20, right: 20, bottom: 20, left: 40}};
+            const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
+            const height = container.node().getBoundingClientRect().height - margin.top - margin.bottom;
+
+            const svg = container.append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${{margin.left}},${{margin.top}})`);
+
+            const x = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.Finish)])
+                .range([0, width]);
+
+            const y = d3.scaleBand()
+                .domain([...new Set(data.map(d => d[groupKey]))])
+                .range([0, height])
+                .padding(0.1);
+
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            svg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${{height}})`)
+                .call(d3.axisBottom(x));
+
+            svg.append('g')
+                .attr('class', 'y-axis')
+                .call(d3.axisLeft(y));
+
+            const bars = svg.selectAll('.bar')
+                .data(data)
+                .enter()
+                .append('g')
+                .attr('class', 'bar-group')
+                .call(d3.drag()
+                    .on('start', function (event, d) {{
+                        d3.select(this).raise().attr('stroke', 'black');
+                    }})
+                    .on('drag', function (event, d) {{
+                        const rect = d3.select(this).select('rect');
+                        const text = d3.select(this).select('text');
+
+                        let newX = Math.max(0, Math.min(width - rect.attr('width'), event.x));
+                        let newY = Math.max(0, Math.min(height - y.bandwidth(), event.y));
+
+                        rect.attr('x', newX);
+                        rect.attr('y', newY);
+
+                        text.attr('x', newX + rect.attr('width') / 2);
+                        text.attr('y', newY + y.bandwidth() / 2);
+                    }})
+                    .on('end', function (event, d) {{
+                        d3.select(this).attr('stroke', null);
+
+                        let overlaps = false;
+                        const bar = d3.select(this).select('rect');
+                        const x1 = +bar.attr('x');
+                        const y1 = +bar.attr('y');
+                        const width1 = +bar.attr('width');
+                        const height1 = +bar.attr('height');
+
+                        svg.selectAll('.bar-group').each(function () {{
+                            if (this !== d3.select(bar.node().parentNode).node()) {{
+                                const otherBar = d3.select(this).select('rect');
+                                const x2 = +otherBar.attr('x');
+                                const y2 = +otherBar.attr('y');
+                                const width2 = +otherBar.attr('width');
+                                const height2 = +otherBar.attr('height');
+
+                                if (x1 < x2 + width2 && x1 + width1 > x2 && y1 < y2 + height2 && y1 + height1 > y2) {{
+                                    overlaps = true;
+                                }}
+                            }}
+                        }});
+
+                        if (overlaps) {{
+                            d3.select(this).select('rect')
+                                .attr('x', x(d.Start))
+                                .attr('y', y(d[groupKey]));
+
+                            d3.select(this).select('text')
+                                .attr('x', x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
+                                .attr('y', y(d[groupKey]) + y.bandwidth() / 2);
+                        }}
+                    }})
+                );
+
+            bars.append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.Start))
+                .attr('y', d => y(d[groupKey]))
+                .attr('width', d => x(d.Finish) - x(d.Start))
+                .attr('height', y.bandwidth())
+                .attr('fill', d => color(d[labelKey]));
+
+            bars.append('text')
+                .attr('x', d => x(d.Start) + (x(d.Finish) - x(d.Start)) / 2)
+                .attr('y', d => y(d[groupKey]) + y.bandwidth() / 2)
+                .attr('dy', '.35em')
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'white')
+                .text(d => d[labelKey]);
+        }}
+    }});
+</script>
+</body>
+</html>
+"""
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Interactive Gantt Charts')
+        self.setGeometry(100, 100, 800, 600)
+
+        self.browser = QWebEngineView()
+        self.browser.setHtml(html_content)
+
+        self.container = QWidget()
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.browser)
+        self.container.setLayout(self.layout)
+        self.setCentralWidget(self.container)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
