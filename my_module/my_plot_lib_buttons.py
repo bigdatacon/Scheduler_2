@@ -31,7 +31,7 @@ def plot_gantt_chart(operations, ax, y_label, group_by, color_by, reverse_y=Fals
     colors = list(mcolors.TABLEAU_COLORS.values())[:len(unique_color_keys)]
     color_map = dict(zip(unique_color_keys, colors))
 
-    max_key = max(groups.keys()) + 2  # добавляем запас по оси Y
+    max_key = max(groups.keys()) + 1  # добавляем запас по оси Y
 
     for i, key in enumerate(sorted(range(1, max_key + 1), reverse=reverse_y)):
         if key in groups:
@@ -73,11 +73,10 @@ plot_gantt_chart(js_operations, ax2, 'Jobs', 'Job', 'Machine', reverse_y=True)
 
 # Переменные для хранения активного прямоугольника и оси
 active_rect = None
-dragging = False
 
 # Функция для обработки кликов на барах
 def on_pick(event):
-    global active_rect, dragging
+    global active_rect
     if isinstance(event.artist, patches.Rectangle):
         if active_rect is not None:
             active_rect.set_edgecolor('black')
@@ -93,11 +92,11 @@ def on_pick(event):
         finish_box.set_val(str(op['Finish']))
         job_box.set_val(str(op['Job']))
         machine_box.set_val(str(op['Machine']))
-        dragging = True
         fig.canvas.draw_idle()
 
 # Функция для обновления данных бара
 def update_bar(event):
+    global active_rect
     if active_rect is not None:
         op, ax, text, color = rect_dict[active_rect]
         new_start = int(start_box.text)
@@ -105,66 +104,44 @@ def update_bar(event):
         new_job = int(job_box.text)
         new_machine = int(machine_box.text)
 
+        def update_linked_rects(op, new_start, new_finish, new_job, new_machine):
+            for rect, (related_op, related_ax, related_text, related_color) in rect_dict.items():
+                if related_op == op:
+                    related_op['Start'] = new_start
+                    related_op['Finish'] = new_finish
+                    rect.set_x(new_start)
+                    rect.set_width(new_finish - new_start)
+                    related_text.set_x(new_start + (new_finish - new_start) / 2)
+
+                    if related_ax == ax1:
+                        if related_op['Machine'] != new_machine:
+                            related_op['Machine'] = new_machine
+                            new_y = [i for i, key in enumerate(sorted(set(op['Machine'] for op in js_operations), reverse=True)) if key == new_machine][0]
+                            rect.set_y(new_y - 0.4)
+                            related_text.set_y(new_y)
+                            related_text.set_text(f'Machine {new_machine}')
+                    elif related_ax == ax2:
+                        if related_op['Job'] != new_job:
+                            related_op['Job'] = new_job
+                            new_y = [i for i, key in enumerate(sorted(set(op['Job'] for op in js_operations), reverse=True)) if key == new_job][0]
+                            rect.set_y(new_y - 0.4)
+                            related_text.set_y(new_y)
+                            related_text.set_text(f'Job {new_job}')
+            fig.canvas.draw_idle()
+
         # Обновляем данные для бара на графике Machines
         if ax == ax1:
-            if op['Job'] != new_job:
-                op['Job'] = new_job
-                text.set_text(f'Job {new_job}')
-                # Обновляем связанный бар на графике Jobs
-                for rect, (related_op, related_ax, related_text, related_color) in rect_dict.items():
-                    if related_op == op and related_ax == ax2:
-                        related_y = [i for i, key in enumerate(sorted(set(op['Job'] for op in js_operations), reverse=True)) if key == new_job][0]
-                        rect.set_y(related_y - 0.4)
-                        related_text.set_y(related_y)
-                        break
-            if op['Machine'] != new_machine:
-                new_y = [i for i, key in enumerate(sorted(set(range(1, max(op['Machine'] for op in js_operations) + 3)), reverse=True)) if key == new_machine][0]
-                op['Machine'] = new_machine
-                active_rect.set_y(new_y - 0.4)
-                text.set_y(new_y)
-                # Обновляем связанный бар на графике Jobs
-                for rect, (related_op, related_ax, related_text, related_color) in rect_dict.items():
-                    if related_op == op and related_ax == ax2:
-                        related_text.set_text(f'Machine {new_machine}')
-                        break
-
+            update_linked_rects(op, new_start, new_finish, new_job, new_machine)
         # Обновляем данные для бара на графике Jobs
         elif ax == ax2:
-            if op['Machine'] != new_machine:
-                op['Machine'] = new_machine
-                text.set_text(f'Machine {new_machine}')
-                # Обновляем связанный бар на графике Machines
-                for rect, (related_op, related_ax, related_text, related_color) in rect_dict.items():
-                    if related_op == op and related_ax == ax1:
-                        new_y = [i for i, key in enumerate(sorted(set(range(1, max(op['Machine'] for op in js_operations) + 3)), reverse=True)) if key == new_machine][0]
-                        rect.set_y(new_y - 0.4)
-                        related_text.set_y(new_y)
-                        break
-            if op['Job'] != new_job:
-                new_y = [i for i, key in enumerate(sorted(set(range(1, max(op['Job'] for op in js_operations) + 3)), reverse=True)) if key == new_job][0]
-                op['Job'] = new_job
-                active_rect.set_y(new_y - 0.4)
-                text.set_y(new_y)
-                # Обновляем связанный бар на графике Machines
-                for rect, (related_op, related_ax, related_text, related_color) in rect_dict.items():
-                    if related_op == op and related_ax == ax1:
-                        related_text.set_text(f'Job {new_job}')
-                        break
+            update_linked_rects(op, new_start, new_finish, new_job, new_machine)
 
-        # Обновляем горизонтальное положение и размеры бара для обоих графиков
-        op['Start'] = new_start
-        op['Finish'] = new_finish
-        active_rect.set_x(new_start)
-        active_rect.set_width(new_finish - new_start)
-        text.set_x(new_start + (new_finish - new_start) / 2)
-
-        for rect, (related_op, related_ax, related_text, related_color) in rect_dict.items():
-            if related_op == op and rect != active_rect:
-                rect.set_x(new_start)
-                rect.set_width(new_finish - new_start)
-                related_text.set_x(new_start + (new_finish - new_start) / 2)
-
-        fig.canvas.draw_idle()
+        # Сбрасываем поля
+        start_box.set_val('')
+        finish_box.set_val('')
+        job_box.set_val('')
+        machine_box.set_val('')
+        active_rect = None
 
 # Функция для сброса вида до оригинального
 def reset_view(event):
