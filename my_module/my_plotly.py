@@ -44,9 +44,9 @@ app.layout = html.Div([
     ]),
     html.Div([
         html.Label('Start:'),
-        dcc.Input(id='start-input', type='number'),
+        dcc.Input(id='start-input', type='text'),
         html.Label('Finish:'),
-        dcc.Input(id='finish-input', type='number'),
+        dcc.Input(id='finish-input', type='text'),
         html.Button('Update Bar', id='update-button', n_clicks=0)
     ]),
     html.Button('Save Changes', id='save-button', n_clicks=0),
@@ -81,7 +81,7 @@ def update_data(save_n_clicks, update_n_clicks, start, finish, relayoutData_js, 
                 if 'name' in shape:
                     task = shape['name']
                     start_date = datetime.fromtimestamp(shape['x0'] / 1000).strftime('%Y-%m-%d')
-                    end_date = datetime.fromtimestamp(shape['x1'] / 1000).strftime('%Y-%м-%д')
+                    end_date = datetime.fromtimestamp(shape['x1'] / 1000).strftime('%Y-%m-%d')
                     for d in data_js:
                         if d['Task'] == task:
                             d['Start'] = start_date
@@ -91,8 +91,8 @@ def update_data(save_n_clicks, update_n_clicks, start, finish, relayoutData_js, 
             for shape in relayoutData_ms.get('shapes', []):
                 if 'name' in shape:
                     task = shape['name']
-                    start_date = datetime.fromtimestamp(shape['x0'] / 1000).strftime('%Y-%м-%д')
-                    end_date = datetime.fromtimestamp(shape['x1'] / 1000).strftime('%Y-%м-%д')
+                    start_date = datetime.fromtimestamp(shape['x0'] / 1000).strftime('%Y-%m-%d')
+                    end_date = datetime.fromtimestamp(shape['x1'] / 1000).strftime('%Y-%м-%d')
                     for d in data_ms:
                         if d['Task'] == task:
                             d['Start'] = start_date
@@ -101,7 +101,7 @@ def update_data(save_n_clicks, update_n_clicks, start, finish, relayoutData_js, 
     elif button_id == 'update-button':
         task = selected_task['task']
         chart = selected_task['chart']
-        if task and start is not None and finish is not None:
+        if task and start and finish:
             if chart == 'js':
                 for d in data_js:
                     if d['Task'] == task:
